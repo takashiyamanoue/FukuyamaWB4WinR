@@ -37,7 +37,7 @@ public class Rprogram implements InterpreterInterface{
 			String line=st.nextToken();
 			int pand = line.indexOf(";;");
 			while(pand>=0){
-				String line2=line.substring(0,pand-1);
+				String line2=line.substring(0,pand);
 				line=st.nextToken();
 				line=line2+" \n "+line;
 				//line=st.nextToken();
@@ -112,9 +112,16 @@ public class Rprogram implements InterpreterInterface{
 		else
 		if(Util.parseKeyWord(x, "eval ", rest)){
 			String line=rest[0];
-			REXP result = engine.eval(line);
-			System.out.println(result);
 			if(logging){
+			   System.out.println("eval-"+line);
+			}
+			REXP result = engine.eval(line);
+			if(result==null) {
+				engine.eval("traceback()");
+				return "ERROR";
+			}
+			if(logging){
+				System.out.println(result);
 			    output=output + result +"\n";
 			}
 			return result.asString();
@@ -130,16 +137,22 @@ public class Rprogram implements InterpreterInterface{
 				breakSymbol=breaks[0];
 		 }
 			REXP result = engine.eval(line);
-			System.out.println(result);
+			if(result!=null) 
+			  System.out.println(result);
 			if(logging){
 			    output=output + result +"\n";
 			}
-			String[] xarray=result.asStringArray();
-			String rtn=xarray[0];
-			for(int i=1;i<xarray.length;i++){
+			if(result!=null) {
+			  String[] xarray=result.asStringArray();
+			  if(xarray==null) {
+				  return "NULL";
+			  }
+			  String rtn=xarray[0];
+			  for(int i=1;i<xarray.length;i++){
 				rtn=rtn+breakSymbol+xarray[i];
+			  }
+			  return rtn;
 			}
-			return rtn;			
 
 		}
 		return "ERROR";
